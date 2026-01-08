@@ -5,20 +5,16 @@ import numpy as np
 IMG_SIZE = 28
 
 def preprocess_image(img_path):
-    """Preprocesa una imagen individual a 28x28 y rango [0,1]"""
     img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
     if img is None:
-        raise FileNotFoundError(f"No se pudo leer la imagen: {img_path}")
+        raise FileNotFoundError(f"No se pudo leer: {img_path}")
+
     img = cv2.resize(img, (IMG_SIZE, IMG_SIZE))
     _, img = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY_INV)
     img = img / 255.0
     return img
 
 def load_dataset(base_folder):
-    """
-    Recorre la carpeta base y todas sus subcarpetas
-    y devuelve listas de imágenes y etiquetas
-    """
     images = []
     labels = []
 
@@ -27,7 +23,6 @@ def load_dataset(base_folder):
         if not os.path.isdir(category_path):
             continue
 
-        # recorrer subcarpetas
         for label in sorted(os.listdir(category_path)):
             label_path = os.path.join(category_path, label)
             if not os.path.isdir(label_path):

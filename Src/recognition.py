@@ -1,25 +1,24 @@
 import numpy as np
 
-def recognize_character(char_img, dataset_X, dataset_y):
-    """
-    Reconoce un carácter usando correlación simple con el dataset.
-    """
-    best_label = None
-    best_score = -1
+def recognize_character(char_img, clf, le):
+    # Aplanar la imagen del carácter para que sea compatible con el modelo
+    char_img_flat = char_img.flatten().reshape(1, -1)
+    
+    # Predecir la etiqueta del carácter y obtener las probabilidades
+    probabilities = clf.predict_proba(char_img_flat)
+    predicted_label = np.argmax(probabilities)
+    confidence = np.max(probabilities)
+    
+    # Convertir la etiqueta numérica a su representación original
+    return le.inverse_transform([predicted_label])[0], confidence
 
-    for i, ref_img in enumerate(dataset_X):
-        score = np.sum(char_img * ref_img)  # similitud simple
-        if score > best_score:
-            best_score = score
-            best_label = dataset_y[i]
-
-    return best_label
-
-def recognize_text(char_images, dataset_X, dataset_y):
-    """
-    Reconoce un conjunto de caracteres y devuelve el texto completo.
-    """
+def recognize_text(chars, clf, le):
     text = ""
-    for c in char_images:
-        text += recognize_character(c, dataset_X, dataset_y)
-    return text
+    confidences = []
+    for c in chars:
+        label, confidence = recognize_character(c, clf, le)
+        text += label
+        confidences.append(confidence)
+    # Calcular el porcentaje de confianza promedio
+    avg_confidence = np.mean(confidences) * 100
+    return text, avg_confidence
